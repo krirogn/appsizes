@@ -1,8 +1,38 @@
 <template>
   <div class="container">
+    <!-- Modals -->
+    <!-- Platform Picker -->
+    <modal v-if="showPlatformPicker" head="Pick a Platform" maxWidth="600px" bg="grey" @close="showPlatformPicker = false">
+      <ul class="platform-list">
+        <li v-for="(i, p) in iosPlatforms" :key="p" @click="platform = p; showPlatformPicker = false">{{ p }}</li>
+      </ul>
+    </modal>
+    <!-- OS Picker -->
+    <modal v-if="showOSPicker" head="Pick an OS" maxWidth="600px" bg="grey" @close="showOSPicker = false">
+      <ul class="platform-list">
+        <li v-for="o in osOptions" :key="o" @click="os = o; showOSPicker = false">{{ o }}</li>
+      </ul>
+    </modal>
+    <!-- Country Picker -->
+    <modal v-if="showCountryPicker" head="Pick a Country" maxWidth="600px" bg="grey" @close="showCountryPicker = false">
+      <ul class="platform-list">
+        <li v-for="count in getCountries()" :key="count.name" @click="country = count.code.toUpperCase(); showCountryPicker = false">{{ count.name }}</li>
+      </ul>
+    </modal>
+
+
+    <!-- The Head -->
     <div class="top">
-      <h1 class="title">OS: iOS | Platform: iPad | Country: {{ country }}</h1>
-      <h1 class="title">Size: {{ totalSize }}</h1><br>
+      <div class="info-head">
+        <h1 class="title" style="cursor:pointer;" @click="showOSPicker = true">OS:</h1>
+        <h1 class="title"> {{ os }} | </h1>
+        <h1 class="title" v-if="os == 'iOS'" style="cursor:pointer;" @click="showPlatformPicker = true">Platform: </h1>
+        <h1 class="title" v-if="os == 'iOS'"> {{ platform }} | </h1>
+        <h1 class="title" style="cursor:pointer;" @click="showCountryPicker = true">Country:</h1>
+        <h1 class="title"> {{ country }}</h1>
+      </div>
+      
+      <h1 style="text-align:center;">Size: {{ totalSize }}</h1><br>
       <input class="search-query" type="text" placeholder="Search App Name" v-model="searchQuery" v-on:keyup.enter="appStoreSearch">
 
       <!-- The Search List -->
@@ -18,8 +48,8 @@
       <br><br>
       
       <!-- The List of Selected Apps -->
-      <ul class="selected-list" ref="listApp">
-        <li v-for="app in selectedApps" :key="app.bundleId" class="app-list" style="cursor:not-allowed;" @click="removeApp(app.bundleId)">
+      <ul class="selected-list" style="background-color:grey;" ref="listApp">
+        <li v-for="app in selectedApps" :key="app.bundleId" title="Delete App?" class="app-list" style="cursor:not-allowed;" @click="removeApp(app.bundleId)">
           <img class="app-icon" :src="app.icon">
           <div style="width:60%;float:right;" :style="{ height: searchAppHeight }">
             <p class="app-name">{{ app.name }}</p>
@@ -29,6 +59,7 @@
       </ul>
     </div>
     
+    <!-- The Particles.js Background -->
     <div class="background" id="particles-js"></div>
   </div>
 </template>
@@ -39,10 +70,15 @@ import Vue from 'vue'
 import axios from 'axios'
 
 import 'particles.js';
+import { getCountries } from 'country-state-picker';
 
 export default Vue.extend({
   data: () => ({
     /// Lookup Tables
+    osOptions: [
+      "iOS",
+      "Android",
+    ],
     iosPlatforms: {
       "iPhone": "software",
       "iPad": "iPadSoftware",
@@ -50,6 +86,13 @@ export default Vue.extend({
 
     /// Settings
     country: "",
+    os: "iOS",
+    platform: "iPad",
+
+    /// Modals
+    showPlatformPicker: false,
+    showOSPicker: false,
+    showCountryPicker: false,
 
     /// DOM
     searchQuery: "",
@@ -90,6 +133,9 @@ export default Vue.extend({
     }
   },
   methods: {
+    getCountries() {
+      return getCountries();
+    },
     getSearchAppHeight() {
       // console.log(this.$refs['listSearch']);
       return "40px";
@@ -101,12 +147,15 @@ export default Vue.extend({
     },
     /// Get search results
     appStoreSearch() {
+      // @ts-ignore
+      var chosenPlatform = this.iosPlatforms[this.platform] as string;      
+
       // https://developer.apple.com/library/archive/documentation/AudioVideo/Conceptual/iTuneSearchAPI/Searching.html
       axios({
         method: 'get',
         // entity: software, iPadSoftware, macSoftware
         // url: 'http://itunes.apple.com/search?entity=software&term=' + this.searchQuery,
-        url: 'http://itunes.apple.com/search?entity=iPadSoftware&country=' + this.country + '&term=' + this.searchQuery,
+        url: 'http://itunes.apple.com/search?entity=' + chosenPlatform + '&country=' + this.country + '&term=' + this.searchQuery,
       })
       .then( (r: any) => {
         this.searchResult = r.data.results;
@@ -167,6 +216,8 @@ export default Vue.extend({
 body {
   padding: 0;
   margin: 0;
+
+  background-color: #2d2626;
 }
 html {
   font-family:
@@ -207,6 +258,37 @@ html {
     z-index: -9999;
   }
 
+  .platform-list {
+    width: 100%;
+    height: calc(100% - 60px);
+
+    margin: 0;
+    padding: 0;
+
+    overflow-x: hidden;
+    overflow-y: scroll;
+    
+    // background-color: red;
+    list-style: none;
+
+    li {
+      padding-top: 20px;
+      padding-bottom: 20px;
+
+      border-bottom: 2px white solid;
+
+      color: white;
+      cursor: pointer;
+      text-align: center;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    li:active {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+  }
+
   .top {
     width: 70%;
     max-width: 600px;
@@ -216,7 +298,19 @@ html {
     left: 50%;
     transform: translateX(-50%);
 
+    color: white;
+
+    .info-head {
+      display: inline-block;
+
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
     .title {
+      display:inline-block;
+
       text-align: center;
     }
 
@@ -228,11 +322,17 @@ html {
       // left: 50%;
       // transform: translateX(-50%);
 
-      border: 2px black dotted;
+      border: 2px white dotted;
       border-radius: 20px 20px 0px 0px;
       padding: 10px 20px;
 
       font-size: 20px;
+
+      background-color: grey;
+      color: white;
+    }
+    .search-query::placeholder {
+      color: rgb(170, 170, 170);
     }
 
     .app-list {
@@ -240,8 +340,7 @@ html {
 
       margin-bottom: 10px;
       padding-bottom: 10px;
-      border-bottom: 2px black solid;
-      // background-color: red;
+      border-bottom: 2px white solid;
 
       cursor: pointer;
 
@@ -281,7 +380,7 @@ html {
       position: absolute;
       z-index: 999;
 
-      border: 2px black solid;
+      border: 2px white solid;
       border-radius: 0px 0px 20px 20px;
       padding: 10px;
 
@@ -291,7 +390,7 @@ html {
 
       font-size: 20px;
       
-      background-color: white;
+      background-color: grey;
     }
 
     .selected-list {
@@ -301,7 +400,7 @@ html {
       position: absolute;
       left: 10px;
 
-      border: 2px black solid;
+      border: 2px white solid;
       border-radius: 20px;
       padding: 10px;
 

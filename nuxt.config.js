@@ -50,5 +50,14 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-  }
+
+    /// You can extend webpack config here
+    // extend: function (config, {isDev, isClient}, ctx) {
+    //   /// This makes google-play-scraper work
+    //   config.node = {
+    //     fs: "empty",
+    //   };
+    // },
+
+  },
 }
