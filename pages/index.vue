@@ -155,7 +155,7 @@ export default Vue.extend({
         method: 'get',
         // entity: software, iPadSoftware, macSoftware
         // url: 'http://itunes.apple.com/search?entity=software&term=' + this.searchQuery,
-        url: 'http://itunes.apple.com/search?entity=' + chosenPlatform + '&country=' + this.country + '&term=' + this.searchQuery,
+        url: 'https://itunes.apple.com/search?entity=' + chosenPlatform + '&country=' + this.country + '&term=' + this.searchQuery,
       })
       .then( (r: any) => {
         this.searchResult = r.data.results;
