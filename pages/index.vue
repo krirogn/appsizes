@@ -11,6 +11,7 @@
           <img class="app-icon" :src="app.artworkUrl100">
           <div style="width:60%;float:right;" :style="{ height: searchAppHeight }">
             <p class="app-name">{{ app.trackName }}</p>
+            <p class="app-name">{{ sizeOf(app.fileSizeBytes) }}</p>
           </div>
         </li>
       </ul>
@@ -28,6 +29,7 @@
       </ul>
     </div>
     
+    <div class="background" id="particles-js"></div>
   </div>
 </template>
 
@@ -35,6 +37,8 @@
 import Vue from 'vue'
 
 import axios from 'axios'
+
+import 'particles.js';
 
 export default Vue.extend({
   data: () => ({
@@ -57,6 +61,13 @@ export default Vue.extend({
   }),
   mounted() {
     this.country = (navigator.language.split('-').at(-1) == undefined) ? "US" : (navigator.language.split('-').at(-1)) as string;
+
+    this.$nextTick(() => {
+      // @ts-ignore
+      particlesJS.load('particles-js', 'particles.json', () => {
+        console.log('callback - particles.js config loaded');
+      });
+    });
   },
   computed: {
     totalSize() {
@@ -185,6 +196,17 @@ html {
 }
 
 .container {
+  .background {
+    width: 100vw;
+    height: 100vh;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    z-index: -9999;
+  }
+
   .top {
     width: 70%;
     max-width: 600px;
