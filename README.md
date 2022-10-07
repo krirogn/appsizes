@@ -1,4 +1,5 @@
 # AppSizes
+The [website](https://appsizes.netlify.app/)
 
 ## Build Setup
 
